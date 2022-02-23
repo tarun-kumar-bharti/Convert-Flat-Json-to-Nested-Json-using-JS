@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Convert Flat Json to Nested Json</title>
+</head>
+<style>
+pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; font-size:15px; font-weight:normal;}
+.string { color: #00A600; font-weight:bold;}
+.number { color: #4E8EF7; font-weight:bold;}
+.boolean { color: blue; font-weight:bold;}
+.null { color: magenta; font-weight:bold;}
+.key { color: #ED1B24; }
+</style>
+
+<body>
+	<script>
+	  var FlatJsonToNested  = { 
+		getChildren : function (arr, parent) {
+			var out = []
+			for(var i in arr) {
+				if(arr[i].ReportingToID == parent) {
+					var children = this.getChildren(arr, arr[i].ID)
+
+					if(children.length) {
+						arr[i].children = children
+					}
+					out.push(arr[i])
+				}
+			}
+			return out
+		},
+		
+		htmloutput : function (inp) {
+			document.body.appendChild(document.createElement('pre')).innerHTML = inp;
+		},
+		
+		highlightEachNode : function (json) {
+			json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+			return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+				var cls = 'number';
+				if (/^"/.test(match)) {
+					if (/:$/.test(match)) {
+						cls = 'key';
+					} else {
+						cls = 'string';
+					}
+				} else if (/true|false/.test(match)) {
+					cls = 'boolean';
+				} else if (/null/.test(match)) {
+					cls = 'null';
+				}
+				return '<span class="' + cls + '">' + match + '</span>';
+			});
+		}
+			
+	};
+	  
+	var flat = [
+		{ID: 1, Name: 'User-1', Status: true, ReportingToID: 0},
+		{ID: 2, Name: 'User-2', Status: true, ReportingToID: 0},
+		{ID: 3, Name: 'User-3', Status: true, ReportingToID: 1},
+		{ID: 4, Name: 'User-4', Status: false, ReportingToID: 3},
+		{ID: 5, Name: 'User-5', Status: false, ReportingToID: 4},
+		{ID: 6, Name: 'User-6', Status: false, ReportingToID: 4},
+		{ID: 7, Name: 'User-7', Status: true, ReportingToID: 3},
+		{ID: 8, Name: 'User-8', Status: false, ReportingToID: 2} 
+	]
+	 
+	var nested = FlatJsonToNested.getChildren(flat, 0)
+	document.write("<br>");   
+	var str = JSON.stringify(nested, undefined, 4); 
+	FlatJsonToNested.htmloutput(FlatJsonToNested.highlightEachNode(str));	  
+	  
+	</script>
+
+</body>
+</html>			
